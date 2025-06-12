@@ -1,0 +1,7 @@
+{
+  "build": {
+    "publish": "dist",
+    "functions": "netlify/functions",
+    "edge_functions": "netlify/edge-functions"
+  }
+}

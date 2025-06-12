@@ -1,0 +1,10 @@
+{
+  "routes": [
+    { "src": "/(.*)", "dest": "/api/index.js" }
+  ],
+  "functions": {
+    "api/index.js": {
+      "runtime": "edge"
+    }
+  }
+}

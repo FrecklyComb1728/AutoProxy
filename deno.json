@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-read --watch src/deno.ts",
+    "start": "deno run --allow-net --allow-read src/deno.ts"
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.220.0/"
+  },
+    "deploy": {
+    "entrypoint": "src/deno.ts"
+  }
+}
