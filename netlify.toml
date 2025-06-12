@@ -1,7 +1,11 @@
-{
-  "build": {
-    "publish": "dist",
-    "functions": "netlify/functions",
-    "edge_functions": "netlify/edge-functions"
-  }
-}
+[build]
+publish = "dist"
+functions = "netlify/functions"
+edge_functions = "netlify/edge-functions"
+
+[build.environment]
+DENO_VERSION = "1.37.0"
+
+[[edge_functions]]
+function = "proxy"
+path = "/*"
