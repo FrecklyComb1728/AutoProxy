@@ -49,45 +49,70 @@ async function findFastestProxy(proxies: ProxyConfig[]): Promise<ProxyConfig | n
 }
 
 async function handler(request: Request): Promise<Response> {
-  const url = new URL(request.url);
-  const path = url.pathname + url.search;
-  
-  if (!path.startsWith('/gh/')) {
-    return new Response('Invalid path. Use format: /gh/owner/repo@branch/path', {
-      status: 400
+  try {
+    const url = new URL(request.url);
+    const path = url.pathname + url.search;
+    
+    console.log(`Processing request for path: ${path}`);
+    
+    if (!path.startsWith('/gh/')) {
+      console.log('Invalid path format');
+      return new Response('Invalid path. Use format: /gh/owner/repo@branch/path', {
+        status: 400
+      });
+    }
+
+    const githubPath = path.substring(4);
+    console.log(`GitHub path: ${githubPath}`);
+
+    const pathParts = githubPath.split('/');
+    
+    // 必须至少有 owner/repo 和文件路径部分
+    if (pathParts.length < 2) {
+      console.log('Invalid path structure');
+      return new Response('Invalid path structure. Use: owner/repo@branch/path', {
+        status: 400
+      });
+    }
+
+    // 解析所有者和仓库信息
+    const ownerPart = pathParts[0];
+    let owner = ownerPart;
+    let repo = pathParts[1];
+    let branch = 'master';
+
+    // 处理可能包含分支名的仓库部分
+    if (repo.includes('@')) {
+      const [repoName, branchName] = repo.split('@');
+      repo = repoName;
+      branch = branchName;
+    }
+
+    // 获取文件路径（跳过 owner 和 repo 部分）
+    const filePath = pathParts.slice(2).join('/');
+
+    console.log(`Parsed path - owner: ${owner}, repo: ${repo}, branch: ${branch}, path: ${filePath}`);
+
+    const fastestProxy = await findFastestProxy(proxyList);
+    if (!fastestProxy) {
+      console.log('No available proxy found');
+      return new Response('No available proxy found', { status: 503 });
+    }
+
+    const targetUrl = fastestProxy.url
+      .replace('{{owner}}', owner)
+      .replace('{{repo}}', repo)
+      .replace('{{branch}}', branch)
+      .replace('{{path}}', filePath);
+
+    console.log(`Redirecting to: ${targetUrl}`);
+    return Response.redirect(targetUrl, 302);  } catch (error: unknown) {
+    console.error('Error processing request:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return new Response(`Internal Server Error: ${errorMessage}`, {
+      status: 500
     });
   }
-
-  const githubPath = path.substring(4);
-  const fastestProxy = await findFastestProxy(proxyList);
-
-  if (!fastestProxy) {
-    return new Response('No available proxy found', { status: 503 });
-  }
-  // 正确解析 URL 路径
-  const pathParts = githubPath.split('/');
-  const [owner, repoWithBranch] = pathParts[0].split('/');
-  
-  // 解析仓库名和分支
-  let repo: string;
-  let branch: string;
-  if (repoWithBranch.includes('@')) {
-    [repo, branch] = repoWithBranch.split('@');
-  } else {
-    repo = repoWithBranch;
-    branch = 'master';
-  }
-  
-  // 获取文件路径，跳过 owner/repo 部分
-  const filePath = pathParts.slice(1).join('/');
-
-  const targetUrl = fastestProxy.url
-    .replace('{{owner}}', owner)
-    .replace('{{repo}}', repo)
-    .replace('{{branch}}', branch)
-    .replace('{{path}}', filePath);
-
-  return Response.redirect(targetUrl, 302);
 }
 
 // Deno server
