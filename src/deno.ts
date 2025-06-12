@@ -64,11 +64,22 @@ async function handler(request: Request): Promise<Response> {
   if (!fastestProxy) {
     return new Response('No available proxy found', { status: 503 });
   }
-
-  const [ownerRepo, ...pathParts] = githubPath.split('/');
-  const [owner, repoBranch] = ownerRepo.split('@');
-  const [repo, branch] = repoBranch ? repoBranch.split('@') : [owner, 'master'];
-  const filePath = pathParts.join('/');
+  // 正确解析 URL 路径
+  const pathParts = githubPath.split('/');
+  const [owner, repoWithBranch] = pathParts[0].split('/');
+  
+  // 解析仓库名和分支
+  let repo: string;
+  let branch: string;
+  if (repoWithBranch.includes('@')) {
+    [repo, branch] = repoWithBranch.split('@');
+  } else {
+    repo = repoWithBranch;
+    branch = 'master';
+  }
+  
+  // 获取文件路径，跳过 owner/repo 部分
+  const filePath = pathParts.slice(1).join('/');
 
   const targetUrl = fastestProxy.url
     .replace('{{owner}}', owner)
