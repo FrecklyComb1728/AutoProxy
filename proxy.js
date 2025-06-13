@@ -1,4 +1,4 @@
-import proxyList from '../../src/config.js';
+import proxyList from './src/config.js';
 
 const TIMEOUT = 5000;
 
