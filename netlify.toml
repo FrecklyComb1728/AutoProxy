@@ -1,5 +1,5 @@
 [build]
-edge_functions = "./"
+edge_functions = "/"
 
 [[edge_functions]]
 function = "proxy"
