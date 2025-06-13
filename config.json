@@ -1,4 +1,4 @@
-export const proxyList = [
+[
   {
     "name": "jsDelivr",
     "url": "https://fastly.jsDelivr.net/gh/{{owner}}/{{repo}}@{{branch}}/{{path}}"
@@ -23,4 +23,4 @@ export const proxyList = [
     "name": "ygxz_in",
     "url": "https://jsd-proxy.ygxz.in/gh/{{owner}}/{{repo}}@{{branch}}/{{path}}"
   }
-];
+]
